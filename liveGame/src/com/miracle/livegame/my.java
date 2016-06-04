@@ -4,6 +4,10 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -66,10 +70,11 @@ public class my extends JFrame  implements ActionListener
     public static void main(String args[]) throws IOException
     {  
         new my();
-        GetMsg();
+        System.out.println(GetMsg());
+        System.out.println(getLocalMac());
     }
 
-    public static void GetMsg() throws IOException {
+    public static String GetMsg() throws IOException {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet("http://vrback.youku.com:8080/recommand/recommandonly/videos4kr");
         CloseableHttpResponse response1 = httpclient.execute(httpGet);
@@ -80,17 +85,20 @@ public class my extends JFrame  implements ActionListener
         // Please note that if response content is not fully consumed the underlying
         // connection cannot be safely re-used and will be shut down and discarded
         // by the connection manager.
+        String content;
         try {
             System.out.println(response1.getStatusLine());
 
             HttpEntity entity1 = response1.getEntity();
-            System.out.println(EntityUtils.toString(entity1));
+            content = EntityUtils.toString(entity1);
+            System.out.println(content);
             // do something useful with the response body
             // and ensure it is fully consumed
             EntityUtils.consume(entity1);
         } finally {
             response1.close();
         }
+        return content;
 
         // HttpPost httpPost = new HttpPost("http://targethost/login");
         // List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -109,4 +117,31 @@ public class my extends JFrame  implements ActionListener
         // response2.close();
         // }
     }
+
+    private static String getLocalMac() throws SocketException, UnknownHostException {
+        // TODO Auto-generated method stub
+        // 获取网卡，获取地址
+        InetAddress ia = InetAddress.getLocalHost();
+
+        byte[] mac = NetworkInterface.getByInetAddress(ia).getHardwareAddress();
+
+        StringBuffer sb = new StringBuffer("");
+        for (int i = 0; i < mac.length; i++) {
+            if (i != 0) {
+                sb.append("-");
+            }
+            // 字节转换为整数
+            int temp = mac[i] & 0xff;
+            String str = Integer.toHexString(temp);
+
+            if (str.length() == 1) {
+                sb.append("0" + str);
+            } else {
+                sb.append(str);
+            }
+        }
+        return sb.toString().toUpperCase();
+    }
+
+
 }  
